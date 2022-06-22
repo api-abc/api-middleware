@@ -13,5 +13,5 @@ type IDataService interface {
 	Update(ctx context.Context, req request.UpdateRequest, name string) (response.BodyResponse, error)
 	GetInserted(ctx context.Context) response.BodyResponseGet
 	GetDeleted(ctx context.Context) response.BodyResponseGet
-	Getupdated(ctx context.Context) response.BodyResponseGet
+	GetUpdated(ctx context.Context) response.BodyResponseGet
 }

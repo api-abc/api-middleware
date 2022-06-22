@@ -21,25 +21,37 @@ func NewDataRepo(cfg *configuration.DI) IDataRepo {
 func (repo *DataRepo) Insert(ctx context.Context, req request.InsertRequest) (response.BodyResponse, error) {
 	client := repo.config.GetClientInsert()
 
-	result, err := client.Insert(context.Background(), req)
+	result, err := client.Insert(ctx, req)
 	if err != nil {
 		return response.BodyResponse{}, err
 	}
 	return result, nil
 }
 
-func (repo *DataRepo) Delete(ctx context.Context) (response.BodyResponse, error) {
-	return response.BodyResponse{}, nil
+func (repo *DataRepo) Delete(ctx context.Context, name string) (response.BodyResponse, error) {
+	client := repo.config.GetClientDelete()
+
+	result, err := client.Delete(ctx, name)
+	if err != nil {
+		return response.BodyResponse{}, err
+	}
+	return result, nil
 }
 
-func (repo *DataRepo) Update(ctx context.Context, req request.InsertRequest) (response.BodyResponse, error) {
-	return response.BodyResponse{}, nil
+func (repo *DataRepo) Update(ctx context.Context, req request.UpdateRequest, name string) (response.BodyResponse, error) {
+	client := repo.config.GetClientUpdate()
+
+	result, err := client.Update(ctx, req, name)
+	if err != nil {
+		return response.BodyResponse{}, err
+	}
+	return result, nil
 }
 
 func (repo *DataRepo) GetInserted(ctx context.Context) (response.BodyResponseGet, error) {
 	client := repo.config.GetClientInsert()
 
-	result, err := client.GetInserted(context.Background())
+	result, err := client.GetInserted(ctx)
 	if err != nil {
 		return response.BodyResponseGet{}, err
 	}
@@ -47,9 +59,21 @@ func (repo *DataRepo) GetInserted(ctx context.Context) (response.BodyResponseGet
 }
 
 func (repo *DataRepo) GetDeleted(ctx context.Context) (response.BodyResponseGet, error) {
-	return response.BodyResponseGet{}, nil
+	client := repo.config.GetClientDelete()
+
+	result, err := client.GetDeleted(ctx)
+	if err != nil {
+		return response.BodyResponseGet{}, err
+	}
+	return result, nil
 }
 
 func (repo *DataRepo) GetUpdated(ctx context.Context) (response.BodyResponseGet, error) {
-	return response.BodyResponseGet{}, nil
+	client := repo.config.GetClientUpdate()
+
+	result, err := client.GetUpdated(ctx)
+	if err != nil {
+		return response.BodyResponseGet{}, err
+	}
+	return result, nil
 }
