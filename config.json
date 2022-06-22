@@ -1,0 +1,10 @@
+{
+    "host": {
+        "port": ":8090"
+    },
+    "api_internal": {
+        "url_inserted": "http://localhost:8080",
+        "url_deleted": "http://localhost:8081",
+        "url_updated": "http://localhost:8082"
+    }
+}
