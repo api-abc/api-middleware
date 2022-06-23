@@ -43,7 +43,9 @@ func (w *Worker) RunWorker() {
 			}
 			wg.Wait()
 		}
+		fmt.Println("Check Update: ", len(check))
 
+		time.Sleep(1 * time.Second)
 		//Create Data
 		wg.Add(w.di.GetConfig().Worker.NumWorker)
 		for i := 0; i < w.di.GetConfig().Worker.NumWorker; i++ {
