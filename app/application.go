@@ -8,6 +8,7 @@ import (
 	"github.com/api-abc/api-middleware/repo"
 	"github.com/api-abc/api-middleware/services"
 	"github.com/api-abc/api-middleware/usecase"
+	"github.com/api-abc/api-middleware/worker"
 )
 
 func Run(di *configuration.DI) {
@@ -16,6 +17,11 @@ func Run(di *configuration.DI) {
 	usecase := usecase.NewDataUsecase(serv)
 
 	port := di.GetConfig().Host.Port
-	err := http.ListenAndServe(port, Routes(usecase))
-	helper.HandlePanic(err)
+	go func() {
+		err := http.ListenAndServe(port, Routes(usecase))
+		helper.HandlePanic(err)
+	}()
+	w := worker.New(di)
+	w.RunWorker()
+
 }

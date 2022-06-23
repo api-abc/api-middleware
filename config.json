@@ -1,4 +1,8 @@
 {
+    "worker": {
+		"num_worker": 5,
+		"query_delay_in_second": 5
+	},
     "host": {
         "port": ":8090"
     },

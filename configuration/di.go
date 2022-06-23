@@ -43,7 +43,7 @@ func (di *DI) GetClientDelete() *delete.Client {
 
 func (di *DI) GetClientUpdate() *update.Client {
 	if di.client_update == nil {
-		client := rest.New(di.config.ApiInternal.UrlDeleted)
+		client := rest.New(di.config.ApiInternal.UrlUpdated)
 		client_data := update.New(client)
 		di.client_update = client_data
 	}

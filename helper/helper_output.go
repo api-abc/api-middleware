@@ -15,15 +15,17 @@ func WriteOutput(writer http.ResponseWriter, code int, resp interface{}) {
 }
 
 func WriteBodyHeader(writer http.ResponseWriter, result response.BodyResponse) {
-	if result.Data.Name == "" {
-		result = response.BodyResponse{
+	status := result.Status
+	if status == response.StatusBadRequest || status == response.StatusNotFound || status == response.StatusInternalServerError {
+		result2 := response.BodyResponseGet{
 			Status:  result.Status,
 			Message: result.Message,
-			// Data:    nil, //
+			Data:    nil,
 		}
+		selectWrite(writer, status, result2)
+	} else {
+		selectWrite(writer, status, result)
 	}
-	status := result.Status
-	selectWrite(writer, status, result)
 }
 
 func WriteBodyHeaderGet(writer http.ResponseWriter, result response.BodyResponseGet) {

@@ -1,5 +1,9 @@
 github.com/api-abc/internal-api-module v0.0.0-20220622052935-54f564b4b962 h1:SojlDTxDTrNb7gvAsI8oXJf4sh2vBnwmJNwlMUWJ4pI=
 github.com/api-abc/internal-api-module v0.0.0-20220622052935-54f564b4b962/go.mod h1:lvqruB6nl7tfdaJvbVgD3ITTbvrviYe0o4LvFCBDiAs=
+github.com/api-abc/internal-api-module v0.0.0-20220622085552-bbfe73ccf964 h1:NvOUiNSO9/NvhMGkNB0mnn+zhx7qScwg6tvuP+RzIH8=
+github.com/api-abc/internal-api-module v0.0.0-20220622085552-bbfe73ccf964/go.mod h1:lvqruB6nl7tfdaJvbVgD3ITTbvrviYe0o4LvFCBDiAs=
+github.com/api-abc/internal-api-module v0.0.0-20220622100608-c478386f9029 h1:yj6s8MbxXQXwQPY4CFtqezq9Fsg/CAW89Ndlf0pAkXA=
+github.com/api-abc/internal-api-module v0.0.0-20220622100608-c478386f9029/go.mod h1:lvqruB6nl7tfdaJvbVgD3ITTbvrviYe0o4LvFCBDiAs=
 github.com/api-abc/internal-api-module v1.0.0 h1:egcosaUqd7LPI29yqFYV3Udmq9uGRteWAJoU3+dNgcQ=
 github.com/api-abc/internal-api-module v1.0.0/go.mod h1:lvqruB6nl7tfdaJvbVgD3ITTbvrviYe0o4LvFCBDiAs=
 github.com/go-chi/chi v1.5.4 h1:QHdzF2szwjqVV4wmByUnTcsbIg7UGaQ0tPF2t5GcAIs=
