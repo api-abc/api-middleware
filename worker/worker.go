@@ -25,7 +25,7 @@ func (w *Worker) RunWorker() {
 	var count int
 	for {
 		count++
-		fmt.Println("Running Worker", count)
+		fmt.Println("Running Worker for x times", count)
 		var wg sync.WaitGroup
 
 		//Check Data for Update
@@ -45,7 +45,6 @@ func (w *Worker) RunWorker() {
 		}
 		fmt.Println("Check Update: ", len(check))
 
-		time.Sleep(1 * time.Second)
 		//Create Data
 		wg.Add(w.di.GetConfig().Worker.NumWorker)
 		for i := 0; i < w.di.GetConfig().Worker.NumWorker; i++ {
