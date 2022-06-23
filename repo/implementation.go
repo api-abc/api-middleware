@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/api-abc/api-middleware/configuration"
 	"github.com/api-abc/internal-api-module/model/request"
@@ -41,10 +42,12 @@ func (repo *DataRepo) Delete(ctx context.Context, name string) (response.BodyRes
 func (repo *DataRepo) Update(ctx context.Context, req request.UpdateRequest, name string) (response.BodyResponse, error) {
 	client := repo.config.GetClientUpdate()
 
+	fmt.Println("UpdateRepo - Hit Module, Name:", name)
 	result, err := client.Update(ctx, req, name)
 	if err != nil {
 		return response.BodyResponse{}, err
 	}
+	fmt.Println("UpdateRepo - Hit Module Done, Result:", result)
 	return result, nil
 }
 

@@ -17,4 +17,5 @@ func main() {
 
 	di := configuration.NewDI(config)
 	app.Run(di)
+
 }

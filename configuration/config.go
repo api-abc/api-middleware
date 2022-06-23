@@ -15,6 +15,11 @@ type Config struct {
 		UrlDeleted  string `json:"url_deleted"`
 		UrlUpdated  string `json:"url_updated"`
 	} `json:"api_internal"`
+
+	Worker struct {
+		NumWorker  int `json:"num_worker"`
+		QueryDelay int `json:"query_delay_in_second"`
+	} `json:"worker"`
 }
 
 func LoadConfig(file string, cfg interface{}) error {

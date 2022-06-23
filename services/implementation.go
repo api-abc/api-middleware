@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/api-abc/api-middleware/repo"
 	"github.com/api-abc/internal-api-module/model/request"
@@ -35,10 +36,12 @@ func (service *DataService) Delete(ctx context.Context, name string) (response.B
 }
 
 func (service *DataService) Update(ctx context.Context, req request.UpdateRequest, name string) (response.BodyResponse, error) {
+	fmt.Println("UpdateService - Process to Repo")
 	result, err := service.repo.Update(ctx, req, name)
 	if err != nil {
 		return response.BodyResponse{}, err
 	}
+	fmt.Println("UpdateService - Process to Repo Done, Result:", result)
 	return result, nil
 }
 

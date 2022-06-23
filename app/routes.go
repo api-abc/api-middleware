@@ -21,7 +21,7 @@ func Routes(uc usecase.IDataUsecase) *chi.Mux {
 	})
 	r.Route(`/data_updated`, func(r chi.Router) {
 		r.Get(`/`, uc.HandleGetUpdated)
-		r.Post(`/{name}`, uc.HandleUpdate)
+		r.Put(`/{name}`, uc.HandleUpdate)
 	})
 	r.Route(`/data_all`, func(r chi.Router) {
 		r.Get(`/`, uc.HandleGetAll)

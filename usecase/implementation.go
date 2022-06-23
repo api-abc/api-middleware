@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -47,12 +48,17 @@ func (uc *DataUsecase) HandleUpdate(writer http.ResponseWriter, req *http.Reques
 	var bodyReq request.UpdateRequest
 	ctx := context.Background()
 	name := chi.URLParam(req, "name")
+	fmt.Println("UpdateCase - Get Param, Param:", name)
 
+	fmt.Println("UpdateCase - Decode")
 	err := json.NewDecoder(req.Body).Decode(&bodyReq)
 	helper.HandlePanic(err)
+	fmt.Println("UpdateCase - Decode Done, Request:", bodyReq)
 
+	fmt.Println("UpdateCase - Process to Service")
 	result, err := uc.service.Update(ctx, bodyReq, name)
 	helper.HandlePanic(err)
+	fmt.Println("UpdateCase - Process to Service Done")
 	helper.WriteBodyHeader(writer, result)
 }
 
@@ -97,11 +103,6 @@ func (uc *DataUsecase) HandleGetAll(writer http.ResponseWriter, req *http.Reques
 		wg.Done()
 	}(&result)
 
-	go func(res *response.BodyResponseGet) {
-		update := uc.service.GetUpdated(ctx)
-		res.Data = append(res.Data, update.Data...)
-		wg.Done()
-	}(&result)
 	wg.Wait()
 	result.Status = response.StatusOK
 	result.Message = "Test Success"
