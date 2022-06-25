@@ -43,6 +43,7 @@ func (wa *WorkerApp) RunWorkerApp() {
 	second := 0
 	for {
 		w := New(wa.di.GetConfig().Worker.NumWorker)
+		t := "insert"
 		var jobs []Job
 		switch second {
 		case 5:
@@ -63,7 +64,10 @@ func (wa *WorkerApp) RunWorkerApp() {
 			}
 		}
 		w.GenerateFrom(jobs)
-		w.Run(context.Background())
+		if len(jobs) != 0 {
+			t = jobs[0].Args
+		}
+		w.Run(context.Background(), t)
 
 		time.Sleep(1 * time.Second)
 		if second == 10 {
@@ -72,6 +76,7 @@ func (wa *WorkerApp) RunWorkerApp() {
 			if jobs[0].Args == "update" {
 				second++
 			}
+
 		}
 		second++
 	}
@@ -90,8 +95,17 @@ func update() (response.BodyResponseGet, error) {
 	check := getAllUpdate()
 	if len(check) == 0 {
 		return response.BodyResponseGet{}, errors.New("no update")
-	} else {
+	} else if len(check) <= 5 {
 		for a := 0; a < len(check); a++ {
+			go func(data domain.Data) {
+				err := assignUpdate(data)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}(check[a])
+		}
+	} else {
+		for a := 0; a < 5; a++ {
 			go func(data domain.Data) {
 				err := assignUpdate(data)
 				if err != nil {

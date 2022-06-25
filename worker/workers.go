@@ -42,15 +42,20 @@ func New(wcount int) WorkerPool {
 	}
 }
 
-func (wp WorkerPool) Run(ctx context.Context) {
+func (wp WorkerPool) Run(ctx context.Context, s string) {
 	var wg sync.WaitGroup
 
-	for i := 0; i < wp.workersCount; i++ {
+	if s == "update" {
 		wg.Add(1)
-		// fan out worker goroutines
-		//reading from jobs channel and
-		//pushing calcs into results channel
 		go worker(ctx, &wg, wp.jobs, wp.results)
+	} else {
+		for i := 0; i < wp.workersCount; i++ {
+			wg.Add(1)
+			// fan out worker goroutines
+			//reading from jobs channel and
+			//pushing calcs into results channel
+			go worker(ctx, &wg, wp.jobs, wp.results)
+		}
 	}
 
 	wg.Wait()
