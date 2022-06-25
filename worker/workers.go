@@ -46,6 +46,7 @@ func (wp WorkerPool) Run(ctx context.Context, s string) {
 	var wg sync.WaitGroup
 
 	if s == "update" {
+		fmt.Println("I'm on worker.go Run")
 		wg.Add(1)
 		go worker(ctx, &wg, wp.jobs, wp.results)
 	} else {

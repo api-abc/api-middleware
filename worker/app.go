@@ -42,6 +42,7 @@ func (wa *WorkerApp) RunWorkerApp() {
 	}
 	second := 0
 	for {
+		fmt.Println(second, time.Now().Minute(), time.Now().Second())
 		w := New(wa.di.GetConfig().Worker.NumWorker)
 		t := "insert"
 		var jobs []Job
@@ -57,6 +58,15 @@ func (wa *WorkerApp) RunWorkerApp() {
 		case 10:
 			for i := 0; i < w.workersCount; i++ {
 				jobs = append(jobs, Job{
+					Descriptor: JobDescriptor{ID: 1, Type: "Insert"},
+					ExecFn:     execFn,
+					Args:       "insert",
+				})
+			}
+		case 15:
+			fmt.Println("I'm on app.go case 15")
+			for i := 0; i < 1; i++ {
+				jobs = append(jobs, Job{
 					Descriptor: JobDescriptor{ID: 1, Type: "Update"},
 					ExecFn:     execFn,
 					Args:       "update",
@@ -69,8 +79,8 @@ func (wa *WorkerApp) RunWorkerApp() {
 		}
 		w.Run(context.Background(), t)
 
-		time.Sleep(1 * time.Second)
-		if second == 10 {
+		time.Sleep(850 * time.Millisecond)
+		if second == 15 {
 			second = 0
 		} else if len(jobs) != 0 {
 			if jobs[0].Args == "update" {
@@ -92,9 +102,12 @@ func insert() (response.BodyResponseGet, error) {
 }
 
 func update() (response.BodyResponseGet, error) {
+	fmt.Println("I'm on app.go update")
 	check := getAllUpdate()
+	fmt.Println("I'm on app.go len checking ", len(check))
 	if len(check) == 0 {
-		return response.BodyResponseGet{}, errors.New("no update")
+		v, _ := insert()
+		return v, errors.New("no update")
 	} else if len(check) <= 5 {
 		for a := 0; a < len(check); a++ {
 			go func(data domain.Data) {
@@ -114,6 +127,7 @@ func update() (response.BodyResponseGet, error) {
 			}(check[a])
 		}
 	}
+	fmt.Println("I'm on app.go len checking ", len(check))
 	time.Sleep(1 * time.Second)
 	v, _ := insert()
 	return v, nil
