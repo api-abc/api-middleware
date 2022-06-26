@@ -21,7 +21,7 @@ func Run(di *configuration.DI) {
 		err := http.ListenAndServe(port, Routes(usecase))
 		helper.HandlePanic(err)
 	}()
-	w := worker.NewWorker(di)
-	w.RunWorkerApp()
+	w := worker.New(di)
+	w.RunWorker()
 
 }

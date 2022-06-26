@@ -13,7 +13,3 @@ var Names = []string{
 var Positions = []string{
 	"Software Engineer", "HR", "Branch Manager", "Quality Assurance",
 }
-
-var WorkStatus = []string{
-	"Work", "Retired", "On Leave",
-}

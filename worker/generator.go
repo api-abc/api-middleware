@@ -11,14 +11,14 @@ import (
 	"github.com/api-abc/internal-api-module/model/request"
 )
 
-func GenerateData() domain.Data {
+func GenerateData(nameSlice int) domain.Data {
 	return domain.Data{
-		Name: Names[rand.Intn(len(Names)-1)],
+		Name: Names[nameSlice],
 		Age:  (rand.Intn(60) + 1),
 		JobDetails: domain.Job{
 			Position:            Positions[rand.Intn(len(Positions)-1)],
 			YearsWorkExperience: (rand.Intn(9) + 1),
-			WorkStatus:          WorkStatus[rand.Intn(len(WorkStatus)-1)],
+			WorkStatus:          "Work",
 		},
 	}
 }
@@ -38,11 +38,11 @@ func CreateInsertRequest(data domain.Data) *http.Request {
 
 func CreateUpdateRequest(data domain.Data) *http.Request {
 	newRequest := request.UpdateRequest{
-		Age: 80,
+		Age: (rand.Intn(60) + 1),
 		JobDetails: domain.Job{
 			Position:            Positions[rand.Intn(len(Positions)-1)],
-			YearsWorkExperience: 12,
-			WorkStatus:          WorkStatus[rand.Intn(len(WorkStatus)-1)],
+			YearsWorkExperience: rand.Intn(9) + 1,
+			WorkStatus:          "Retired",
 		},
 	}
 	marshal, err := json.Marshal(newRequest)
