@@ -50,7 +50,7 @@ func (w *Worker) RunWorker() {
 	count := 0
 	updCount := 0
 
-	second := time.NewTicker(997 * time.Millisecond)
+	second := time.NewTicker(998 * time.Millisecond)
 	chSecond := make(chan int)
 	defer close(chSecond)
 	func() {
