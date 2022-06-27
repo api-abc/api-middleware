@@ -40,7 +40,6 @@ func (w *Worker) RunWorker() {
 	*/
 
 	var wg sync.WaitGroup
-	var count int
 	var nameSlice int
 	var check = make(chan domain.Data, 10)
 	defer close(check)
@@ -49,103 +48,123 @@ func (w *Worker) RunWorker() {
 	time_delay := w.di.GetConfig().Worker.QueryDelay
 
 	fmt.Println("WORKER RUN IN\t\t", getTime())
+	fmt.Println("---------------------------------")
 
-	for {
-		count++
-		fmt.Println("Running Worker for", count)
-
-		// Create Data
-		for v := 0; v < 2; v++ {
-			if nameSlice >= 35 {
-				time.Sleep(time.Duration(time_delay) * time.Second)
-				fmt.Println("NO INSERT...\t\t", getTime())
-			} else {
-				time.Sleep(time.Duration(time_delay) * time.Second)
-				wg.Add(num_worker)
-				insert := 0
-				for i := 0; i < num_worker; i++ {
-					go func() {
-						err := assignInsert(GenerateData(nameSlice))
-						if err != nil {
-							fmt.Println(err)
-						}
-						wg.Done()
-					}()
-					insert++
-					fmt.Println("Insert data", Names[nameSlice])
-					nameSlice++
+	// RUN EVERY 5 SECONDS
+	ticker := time.NewTicker(time.Duration(time_delay) * time.Second)
+	channel := make(chan int)
+	defer close(channel)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				// Check Data for Update
+				data := getAllUpdate()
+				for _, v := range data {
+					check <- v
 				}
-				wg.Wait()
-				fmt.Println("Insert", insert, "data", "\t\t", getTime())
+				fmt.Println("Check Update: ", len(check), "\t", getTime())
+
+				// Insert Data
+				if nameSlice >= 35 {
+					channel <- 0
+					fmt.Println("NO INSERT...\t\t", getTime())
+				} else {
+					wg.Add(num_worker)
+					insert := 0
+					for i := 0; i < num_worker; i++ {
+						go func() {
+							err := assignInsert(GenerateData(nameSlice))
+							if err != nil {
+								fmt.Println(err)
+							}
+							wg.Done()
+						}()
+						insert++
+						fmt.Println("Insert data", Names[nameSlice])
+						nameSlice++
+					}
+					wg.Wait()
+					fmt.Println("Insert", insert, "data", "\t\t", getTime())
+				}
+			case <-channel:
+				ticker.Stop()
 			}
 		}
+	}()
 
-		// Check Data for Update
-		ticker := time.NewTicker(time.Duration(time_delay) * time.Second)
-		channel := make(chan int)
-		defer close(channel)
-		go func() {
-			for {
-				select {
-				case <-ticker.C:
-					data := getAllUpdate()
-					for _, v := range data {
-						check <- v
+	// RUN EVERY 10 SECONDS
+	ticker2 := time.NewTicker((time.Duration(time_delay) * 2) * time.Second)
+	channel2 := make(chan int)
+	defer close(channel2)
+	func() {
+		count := 0
+		for {
+			select {
+			case <-ticker2.C:
+				// Update Data
+				time.Sleep(1 * time.Second)
+				if len(check) != 0 && len(check) <= num_worker {
+					count = 0
+					length := len(check)
+					wg.Add(length)
+					for a := 0; a < length; a++ {
+						go func(data domain.Data) {
+							err := assignUpdate(data)
+							if err != nil {
+								fmt.Println(err)
+							}
+							wg.Done()
+						}(<-check)
 					}
-				case <-channel:
-					ticker.Stop()
-				}
-			}
-		}()
+					wg.Wait()
+					fmt.Println("Done Update: ", length, "\t", getTime())
+				} else if len(check) != 0 && len(check) > num_worker {
+					count = 0
+					length := len(check)
+					wg.Add(5)
+					for a := 0; a < 5; a++ {
+						go func(data domain.Data) {
+							err := assignUpdate(data)
+							if err != nil {
+								fmt.Println(err)
+							}
+							wg.Done()
+						}(<-check)
+					}
+					wg.Wait()
+					fmt.Println("Done Update: ", 5, "\t", getTime())
 
-		// Update Data
-		time.Sleep(1 * time.Second)
-		fmt.Println("Check Update: ", len(check))
-		if len(check) != 0 && len(check) <= num_worker {
-			time.Sleep(1 * time.Second)
-			length := len(check)
-			wg.Add(length)
-			for a := 0; a < length; a++ {
-				go func(data domain.Data) {
-					err := assignUpdate(data)
-					if err != nil {
-						fmt.Println(err)
-					}
-					wg.Done()
-				}(<-check)
-			}
-			wg.Wait()
-			fmt.Println("Done Update: ", length, "\t", getTime())
-		} else if len(check) != 0 && len(check) > num_worker {
-			for i := 0; i < 2; i++ {
-				wg.Add(5)
-				for a := 0; a < 5; a++ {
-					go func(data domain.Data) {
-						err := assignUpdate(data)
-						if err != nil {
-							fmt.Println(err)
-						}
-						wg.Done()
-					}(<-check)
-				}
-				wg.Wait()
-				fmt.Println("Done Update: ", 5, "\t", getTime())
-				if i == 0 {
 					time.Sleep(1 * time.Second)
+
+					length = length - 5
+					wg.Add(length)
+					for a := 0; a < length; a++ {
+						go func(data domain.Data) {
+							err := assignUpdate(data)
+							if err != nil {
+								fmt.Println(err)
+							}
+							wg.Done()
+						}(<-check)
+					}
+					wg.Wait()
+					fmt.Println("Done Update: ", length, "\t", getTime())
+				} else {
+					if count > 3 {
+						channel2 <- 0
+					}
+					fmt.Println("NO UPDATE...\t\t", getTime())
+					count++
 				}
-			}
-		} else {
-			fmt.Println("NO UPDATE...\t\t", getTime())
-		}
 
-		fmt.Println("---------------------------------")
+				fmt.Println("---------------------------------")
 
-		if count >= 7 {
-			if len(check) == 0 {
-				break
+			case <-channel2:
+				ticker.Stop()
 			}
 		}
-	}
+	}()
 }
 
 func assignInsert(data domain.Data) error {
