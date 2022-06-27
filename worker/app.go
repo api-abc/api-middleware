@@ -15,6 +15,9 @@ import (
 	"github.com/api-abc/internal-api-module/model/response"
 )
 
+var nameSlice int = 0
+var check = make(chan domain.Data, 10)
+
 type WorkerApp struct {
 	di *configuration.DI
 }
@@ -24,6 +27,7 @@ func NewWorker(conf *configuration.DI) *WorkerApp {
 }
 
 func (wa *WorkerApp) RunWorkerApp() {
+	defer close(check)
 	execFn := func(s string) (v interface{}, e error) {
 		switch s {
 		case "insert":
@@ -42,7 +46,11 @@ func (wa *WorkerApp) RunWorkerApp() {
 		return nil, nil
 	}
 	second := 0
+
 	for {
+		if nameSlice >= 35 {
+			break
+		}
 		fmt.Println(second, time.Now().Minute(), time.Now().Second())
 		w := New(wa.di.GetConfig().Worker.NumWorker)
 		t := "insert"
@@ -57,6 +65,10 @@ func (wa *WorkerApp) RunWorkerApp() {
 				})
 			}
 		case 10:
+			data := getAllUpdate()
+			for _, v := range data {
+				check <- v
+			}
 			for i := 0; i < w.workersCount; i++ {
 				jobs = append(jobs, Job{
 					Descriptor: JobDescriptor{ID: 1, Type: "Insert"},
@@ -65,6 +77,10 @@ func (wa *WorkerApp) RunWorkerApp() {
 				})
 			}
 		case 15:
+			data := getAllUpdate()
+			for _, v := range data {
+				check <- v
+			}
 			fmt.Println("I'm on app.go case 15")
 			for i := 0; i < 1; i++ {
 				jobs = append(jobs, Job{
@@ -82,7 +98,7 @@ func (wa *WorkerApp) RunWorkerApp() {
 
 		time.Sleep(850 * time.Millisecond)
 		if second == 15 {
-			second = 0
+			second = 5
 		} else if len(jobs) != 0 {
 			if jobs[0].Args == "update" {
 				second++
@@ -95,7 +111,7 @@ func (wa *WorkerApp) RunWorkerApp() {
 }
 
 func (wa *WorkerApp) insert() (response.BodyResponseGet, error) {
-	err := assignInsert(GenerateData())
+	err := assignInsert(GenerateData(nameSlice))
 	if err != nil {
 		return response.BodyResponseGet{}, err
 	}
@@ -105,7 +121,6 @@ func (wa *WorkerApp) insert() (response.BodyResponseGet, error) {
 func (wa *WorkerApp) update() (response.BodyResponseGet, error) {
 	var wg sync.WaitGroup
 	fmt.Println("I'm on app.go update")
-	check := getAllUpdate()
 	fmt.Println("I'm on app.go len checking ", len(check))
 	if len(check) == 0 {
 		for b := 0; b < wa.di.GetConfig().Worker.NumWorker; b++ {
@@ -127,16 +142,32 @@ func (wa *WorkerApp) update() (response.BodyResponseGet, error) {
 				if err != nil {
 					fmt.Println(err)
 				}
-			}(check[a])
+			}(<-check)
 		}
 	} else {
-		for a := 0; a < 5; a++ {
-			go func(data domain.Data) {
-				err := assignUpdate(data)
-				if err != nil {
-					fmt.Println(err)
-				}
-			}(check[a])
+		length := len(check)
+		for i := 0; i < 2; i++ {
+			var counData int
+			if length > 5 {
+				counData = 5
+			} else {
+				counData = length
+			}
+			wg.Add(counData)
+			for a := 0; a < counData; a++ {
+				go func(data domain.Data) {
+					err := assignUpdate(data)
+					if err != nil {
+						fmt.Println(err)
+					}
+					wg.Done()
+				}(<-check)
+				length--
+			}
+			wg.Wait()
+			if i == 0 {
+				time.Sleep(1 * time.Second)
+			}
 		}
 	}
 	fmt.Println("I'm on app.go len checking ", len(check))
