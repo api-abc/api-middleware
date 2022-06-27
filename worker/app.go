@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/api-abc/api-middleware/configuration"
@@ -26,13 +27,13 @@ func (wa *WorkerApp) RunWorkerApp() {
 	execFn := func(s string) (v interface{}, e error) {
 		switch s {
 		case "insert":
-			v, e = insert()
+			v, e = wa.insert()
 			if e != nil {
 				return nil, e
 			}
 			return v, nil
 		case "update":
-			v, e = update()
+			v, e = wa.update()
 			if e != nil {
 				return nil, e
 			}
@@ -93,7 +94,7 @@ func (wa *WorkerApp) RunWorkerApp() {
 
 }
 
-func insert() (response.BodyResponseGet, error) {
+func (wa *WorkerApp) insert() (response.BodyResponseGet, error) {
 	err := assignInsert(GenerateData())
 	if err != nil {
 		return response.BodyResponseGet{}, err
@@ -101,13 +102,24 @@ func insert() (response.BodyResponseGet, error) {
 	return response.BodyResponseGet{Status: response.StatusOK, Message: "Success"}, nil
 }
 
-func update() (response.BodyResponseGet, error) {
+func (wa *WorkerApp) update() (response.BodyResponseGet, error) {
+	var wg sync.WaitGroup
 	fmt.Println("I'm on app.go update")
 	check := getAllUpdate()
 	fmt.Println("I'm on app.go len checking ", len(check))
 	if len(check) == 0 {
-		v, _ := insert()
-		return v, errors.New("no update")
+		for b := 0; b < wa.di.GetConfig().Worker.NumWorker; b++ {
+			wg.Add(1)
+			go func() {
+				_, err := wa.insert()
+				if err != nil {
+					fmt.Println(err)
+				}
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+		return response.BodyResponseGet{}, errors.New("no update")
 	} else if len(check) <= 5 {
 		for a := 0; a < len(check); a++ {
 			go func(data domain.Data) {
@@ -129,8 +141,15 @@ func update() (response.BodyResponseGet, error) {
 	}
 	fmt.Println("I'm on app.go len checking ", len(check))
 	time.Sleep(1 * time.Second)
-	v, _ := insert()
-	return v, nil
+	for b := 0; b < 5; b++ {
+		go func() {
+			_, err := wa.insert()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}()
+	}
+	return response.BodyResponseGet{Status: response.StatusOK, Message: "Success"}, nil
 }
 
 func assignInsert(data domain.Data) error {
